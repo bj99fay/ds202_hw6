@@ -1,0 +1,52 @@
+# Homework #6
+#### Bernard Fay
+#### 4/20/2020
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyverse)
+```
+
+```{r}
+dogs <- readxl::read_xlsx("KIB - Best in Show (public).xlsx", "Best in show")
+colnames(dogs) <- as.character(unlist(dogs[5,]))
+dogs <- dogs[-c(1:6),]
+dogs <- dogs[colSums(!is.na(dogs)) > 0]
+dogs[dogs == "no data"] <- NA
+write.csv(dogs, "dogs.csv")
+dogsClean <- read.csv("dogs.csv")
+dogsClean
+
+dogsFull <- readxl::read_xlsx("KIB - Best in Show (public).xlsx", "Best in show full sheet")
+dogsFull
+columns <- as.character(unlist(dogsFull[2,]))
+columns[1] <- as.character(dogsFull[3,1])
+colnames(dogsFull) <- columns
+dogsFull <- dogsFull[-c(1:3),]
+dogsFull <- dogsFull[colSums(!is.na(dogsFull)) > 0]
+dogsFull[dogsFull == "no data"] <- NA
+write.csv(dogsFull, "dogsFull.csv")
+dogsFullClean <- read.csv("dogsFull.csv")
+dogsFullClean
+```
+
+```{r, message=FALSE}
+data <- dogsFullClean %>% select(Dog.breed, category, size.category, datadog.score, 
+                                 POPULARITY.IN.US, X1.INTELLIGENCE..TRAINABILITY..ranking)
+data <- data[!(is.na(data$Dog.breed) | is.na(data$category) | is.na(data$size.category) |
+                 is.na(data$datadog.score) | is.na(data$POPULARITY.IN.US) |
+                 is.na(data$X1.INTELLIGENCE..TRAINABILITY..ranking)),]
+data <- data %>% mutate(intelligence = as.factor(ifelse(X1.INTELLIGENCE..TRAINABILITY..ranking >= 39, "clever", "dumb"))) %>%
+  mutate(size = factor(size.category, levels = c("small", "medium", "large")))
+data %>% ggplot(aes(x = datadog.score, y = POPULARITY.IN.US)) + 
+  geom_point(aes(color = category, shape = intelligence, size = size)) + 
+  geom_text(aes(label = Dog.breed), check_overlap = TRUE) +
+  ylim(rev(range(data$POPULARITY.IN.US))) +
+  geom_hline(yintercept = 78) + 
+  geom_vline(xintercept = 2.4) + 
+  ylab("popularity") +
+  xlab("data score")
+```
+
+
