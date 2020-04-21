@@ -4,20 +4,13 @@
 
 ```{r setup, include=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width=12, fig.height=8)
 library(ggplot2)
+library(ggrepel)
 library(tidyverse)
 ```
 
 ```{r}
-dogs <- readxl::read_xlsx("KIB - Best in Show (public).xlsx", "Best in show")
-colnames(dogs) <- as.character(unlist(dogs[5,]))
-dogs <- dogs[-c(1:6),]
-dogs <- dogs[colSums(!is.na(dogs)) > 0]
-dogs[dogs == "no data"] <- NA
-write.csv(dogs, "dogs.csv")
-dogsClean <- read.csv("dogs.csv")
-dogsClean
-
 dogsFull <- readxl::read_xlsx("KIB - Best in Show (public).xlsx", "Best in show full sheet")
 dogsFull
 columns <- as.character(unlist(dogsFull[2,]))
@@ -28,7 +21,6 @@ dogsFull <- dogsFull[colSums(!is.na(dogsFull)) > 0]
 dogsFull[dogsFull == "no data"] <- NA
 write.csv(dogsFull, "dogsFull.csv")
 dogsFullClean <- read.csv("dogsFull.csv")
-dogsFullClean
 ```
 
 ```{r, message=FALSE}
@@ -41,7 +33,7 @@ data <- data %>% mutate(intelligence = as.factor(ifelse(X1.INTELLIGENCE..TRAINAB
   mutate(size = factor(size.category, levels = c("small", "medium", "large")))
 data %>% ggplot(aes(x = datadog.score, y = POPULARITY.IN.US)) + 
   geom_point(aes(color = category, shape = intelligence, size = size)) + 
-  geom_text(aes(label = Dog.breed), check_overlap = TRUE) +
+  geom_text_repel(aes(label = Dog.breed),  size = 4, check_overlap =TRUE) +
   ylim(rev(range(data$POPULARITY.IN.US))) +
   geom_hline(yintercept = 78) + 
   geom_vline(xintercept = 2.4) + 
