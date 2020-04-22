@@ -1,6 +1,9 @@
-# Homework #6
-#### Bernard Fay
-#### 4/20/2020
+---
+title: "Homework 6"
+author: "Bernard Fay; GitHub: bj99fay"
+date: "4/20/2020"
+output: html_document
+---
 
 ```{r setup, include=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -23,7 +26,7 @@ temp <- temp %>% mutate(Dog.breed = as.factor(`Dog breed`), category = as.factor
                         datadog.score = as.numeric(`datadog score`), popularity = as.numeric(`POPULARITY IN US`),
                         INTELLIGENCE.RANKING = as.numeric(`1 INTELLIGENCE (TRAINABILITY) ranking`),
                         size = factor(`size category`, levels = c("small", "medium", "large"))) %>%
-                 mutate(intelligence = as.factor(ifelse(INTELLIGENCE.RANKING >= 39, "clever", "dumb")))
+                 mutate(intelligence = as.factor(ifelse(INTELLIGENCE.RANKING >= 44, "clever", "dumb")))
 temp <- temp %>% select(Dog.breed, category, size, datadog.score, intelligence, popularity) %>%
                  filter(!(is.na(Dog.breed) | is.na(category) | is.na(size) |
                  is.na(datadog.score) | is.na(popularity) | is.na(intelligence)))
@@ -40,5 +43,7 @@ dogsClean %>% ggplot(aes(x = datadog.score, y = popularity)) +
   ylab("popularity") +
   xlab("data score")
 ```
+The data score was calculated using the following attributes: intelligence, costs, longetivity, grooming, ailments, and appetite.
 
+Quadrant descriptions: (I) Hot Dogs!, (II) Inexplicably Overrated, (III) The Rightly Ignored, (IV) Overlooked Treasures
 
