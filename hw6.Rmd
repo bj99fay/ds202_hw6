@@ -10,32 +10,32 @@ library(ggrepel)
 library(tidyverse)
 ```
 
-```{r}
+```{r, results = "hide"}
 dogsFull <- readxl::read_xlsx("KIB - Best in Show (public).xlsx", "Best in show full sheet")
-dogsFull
 columns <- as.character(unlist(dogsFull[2,]))
 columns[1] <- as.character(dogsFull[3,1])
 colnames(dogsFull) <- columns
 dogsFull <- dogsFull[-c(1:3),]
 dogsFull <- dogsFull[colSums(!is.na(dogsFull)) > 0]
 dogsFull[dogsFull == "no data"] <- NA
-write.csv(dogsFull, "dogsFull.csv")
-dogsFullClean <- read.csv("dogsFull.csv")
+temp <- dogsFull[c(1, 2, 3, 5, 8, 27)]
+temp <- temp %>% mutate(Dog.breed = as.factor(`Dog breed`), category = as.factor(category), 
+                        datadog.score = as.numeric(`datadog score`), popularity = as.numeric(`POPULARITY IN US`),
+                        INTELLIGENCE.RANKING = as.numeric(`1 INTELLIGENCE (TRAINABILITY) ranking`),
+                        size = factor(`size category`, levels = c("small", "medium", "large"))) %>%
+                 mutate(intelligence = as.factor(ifelse(INTELLIGENCE.RANKING >= 39, "clever", "dumb")))
+temp <- temp %>% select(Dog.breed, category, size, datadog.score, intelligence, popularity) %>%
+                 filter(!(is.na(Dog.breed) | is.na(category) | is.na(size) |
+                 is.na(datadog.score) | is.na(popularity) | is.na(intelligence)))
+dogsClean <- temp
 ```
 
 ```{r, message=FALSE}
-data <- dogsFullClean %>% select(Dog.breed, category, size.category, datadog.score, 
-                                 POPULARITY.IN.US, X1.INTELLIGENCE..TRAINABILITY..ranking)
-data <- data[!(is.na(data$Dog.breed) | is.na(data$category) | is.na(data$size.category) |
-                 is.na(data$datadog.score) | is.na(data$POPULARITY.IN.US) |
-                 is.na(data$X1.INTELLIGENCE..TRAINABILITY..ranking)),]
-data <- data %>% mutate(intelligence = as.factor(ifelse(X1.INTELLIGENCE..TRAINABILITY..ranking >= 39, "clever", "dumb"))) %>%
-  mutate(size = factor(size.category, levels = c("small", "medium", "large")))
-data %>% ggplot(aes(x = datadog.score, y = POPULARITY.IN.US)) + 
+dogsClean %>% ggplot(aes(x = datadog.score, y = popularity)) + 
   geom_point(aes(color = category, shape = intelligence, size = size)) + 
-  geom_text_repel(aes(label = Dog.breed),  size = 4, check_overlap =TRUE) +
-  ylim(rev(range(data$POPULARITY.IN.US))) +
-  geom_hline(yintercept = 78) + 
+  geom_text_repel(aes(label = Dog.breed),  size = 4) +
+  ylim(rev(range(dogsClean$popularity))) +
+  geom_hline(yintercept = 59) + 
   geom_vline(xintercept = 2.4) + 
   ylab("popularity") +
   xlab("data score")
